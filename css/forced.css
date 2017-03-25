@@ -1,0 +1,135 @@
+.modal-dialog {
+  margin: 12% auto;
+}
+.col-xs-7{
+  text-align: center;
+}
+.nav-item a {
+  text-align: center;
+}
+
+.active {
+  border-bottom: 4px solid white;
+}
+
+.navbar-nav li {
+  margin-right: 10px;
+  margin-left: 10px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  width: 100px;
+}
+
+.navbar {
+  padding: 0px;
+}
+
+.navbar-toggler {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.navbar-collapse {
+  text-align: -webkit-center;
+}
+
+.brand {
+  position: relative;
+  width: 60px;
+  margin: 10px;
+}
+
+.bg-inverse {
+  background-color: #333d3f!important;
+}
+
+.pro-display {
+  height: 680px;
+  background-image: url("../img/pic-computer.jpg");
+  background-size: cover;
+  opacity: 0.9;
+}
+
+.step {
+  background-color: #f5f5f5;
+  padding-top: 20px;
+}
+
+.navbar-collapse form {
+  padding-right: 10px;
+}
+
+.footer {
+  padding: 10px;
+  color: #f0f0f0;
+  text-align: center;
+  background: #333d3f;
+}
+
+#login {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .navbar-nav {
+    border-top: 1px solid white;
+  }
+  .navbar-nav li {
+    padding: 0px;
+  }
+  .active {
+    border: none;
+  }
+  #login_button {
+    display: none;
+  }
+  #login {
+    display: block;
+  }
+}
+
+.copyright {
+  font-size: small;
+}
+
+.social {
+  -webkit-padding-start: 0px;
+  -webkit-margin-before: 0px;
+  -webkit-margin-after: 0px;
+  margin: 10px;
+}
+
+.social li {
+  display: inline-block;
+  list-style-type: none;
+	background: none repeat scroll 0 0 #f5f5f5;
+	border: 2px solid #f5f5f5;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	-o-border-radius: 50%;
+	-ms-border-radius: 50%;
+	border-radius: 50%;
+	height: 26px;
+	line-height: 26px;
+	padding: 0;
+	text-align: center;
+	width: 26px;
+	transition: all 0.5s ease 0s;
+	-moz-transition: all 0.5s ease 0s;
+	-webkit-transition: all 0.5s ease 0s;
+	-ms-transition: all 0.5s ease 0s;
+	-o-transition: all 0.5s ease 0s;
+}
+
+.social li:hover {
+	transform: scale(1.15) rotate(360deg);
+	-webkit-transform: scale(1.1) rotate(360deg);
+	-moz-transform: scale(1.1) rotate(360deg);
+	-ms-transform: scale(1.1) rotate(360deg);
+	-o-transform: scale(1.1) rotate(360deg);
+}
+
+.social li a i {
+	font-size: 20px;
+	color: #333d3f !important;
+}
