@@ -1,6 +1,6 @@
   <div class="container-fluid pro-display">
   <center>
-    <div class="col-md-7">
+    <div class="col-md-7" style="color: white;top: 150px;">
       <h2>loripsum kjshdfgkd rrtyh ryjfgh rhrhtgrhtrgsh</h2>
       <p>fdghjvmnbvfgdhfj fghdng hbfsdghmnbg gdfn dhrtfghj tghrsdgj ghrstdgjf gerfhs ter</p>
     </div>

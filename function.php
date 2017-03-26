@@ -120,7 +120,7 @@ class InscriptionPro {
 						$verifMail -> bindParam(':email', $email);
 						$verifMail -> execute();
 						if($verifMail -> rowCount() != 1) {
-							InscriptionPro::profil($_POST['civilite'], $_POST['nom'], $_POST['prenom'], $email, $_POST['password'], $_POST['naissance'], $_POST['societe'], $_POST['localcommercial'], $_POST['adresse'], $_POST['codepostal'], $_POST['ville'], $_POST['pays'], $_POST['telephone']);
+							InscriptionPro::profil($_POST['nom'], $_POST['prenom'], $email, $_POST['password'],$_POST['adresse'],$_POST['codepostal'],$_POST['ville'],$_POST['telephone']);
 							$resultat = InscriptionPro::activer($email);
 						}
 						else {
@@ -149,25 +149,136 @@ class InscriptionPro {
 
 
 	// creation du profil
-	public static function profil($civilite, $nom, $prenom, $email, $password, $naissance, $societe, $localcommercial, $adresse, $codepostal, $ville, $pays, $telephone) {
+	public static function profil($nom, $prenom, $email, $password, $adresse, $codepostal, $ville, $telephone) {
 		$password = Cryptage::crypter($password);
 		$niveau = 1;
-		$resultat = Bdd::connectBdd()->prepare(INSERT.MEMBREZ.PROFILC);
-		$resultat -> bindParam(':civilite', $civilite);
+		$resultat = Bdd::connectBdd()->prepare(INSERT.MEMBREZ.PROFILP);
 		$resultat -> bindParam(':nom', $nom);
 		$resultat -> bindParam(':prenom', $prenom);
 		$resultat -> bindParam(':email', $email);
 		$resultat -> bindParam(':password', $password);
-		$resultat -> bindParam(':naissance', $naissance);
- 		$resultat -> bindParam(':societe', $societe);
- 		$resultat -> bindParam(':localcommercial', $localcommercial);
- 		$resultat -> bindParam(':adresse', $adresse);
- 		$resultat -> bindParam(':codepostal', $codepostal);
- 		$resultat -> bindParam(':ville', $ville);
- 		$resultat -> bindParam(':pays', $pays);
- 		$resultat -> bindParam(':telephone', $telephone);
+		$resultat -> bindParam(':adresse', $adresse);
+		$resultat -> bindParam(':codepostal', $codepostal);
+		$resultat -> bindParam(':ville', $ville);
+		$resultat -> bindParam(':telephone', $telephone);
  		$resultat -> bindParam(':niveau', $niveau);
 		$resultat -> execute();
+		$currenConn=Bdd::getCurrentConnexion();
+		return $currenConn->lastInsertId();
+	}
+
+	// creation du profil
+	public static function insertForm($id, $societe, $localcommercial) {
+		$resultat = Bdd::connectBdd()->prepare(INSERT.INFOADMZ.PROFILFORM);
+		$resultat -> bindParam(':id', $id);
+ 		$resultat -> bindParam(':societe', $societe);
+ 		$resultat -> bindParam(':localcommercial', $localcommercial);
+ 		$resultat -> execute();
+	}
+
+	// activation du membre
+	// recuperation de la methode d'activation du site
+	// puis activation du membre
+	public static function activer($email) {
+		$activation = Bdd::connectBdd()->prepare(SELECT.ALL.ACTIVATION.METHODEACTIV);
+		$activation -> execute();
+		$methode = $activation -> fetch(PDO::FETCH_ASSOC);
+		switch($methode['id']) {
+			case 1 :
+			Activation::activationAuto($email);
+			$resultat = 'Vous-pouvez d&egrave;s &agrave; pr&eacute;sent vous connecter!';
+			break;
+
+			case 2 :
+			Activation::activationMailCandid($email);
+			$resultat = 'Un email de confirmation vient de vous être envoyé!';
+			break;
+
+			case 3 :
+			$resultat = 'Votre inscription est termin&eacute;e, elle est en cours de modération,<br />un email de confirmation vous sera envoy&eacute; une fois validée;,<br />pensez à v&eacute;rifier vos spams.';
+			break;
+		}
+		$_SESSION["ActiverTempo"] = $resultat;
+		return $resultat;
+	}
+}
+
+
+class InscriptionClient {
+
+	// Fonction d'inscription
+	// Si l'identifiant, l'email le mot de passe un et le mot de passe deux sont poster
+	//		Si les deux mot de passe sont identiques
+	//			Si le pseudo n'existe pas dans la bdd
+	//				Si l'email est valide
+	//					Si l'email n'existe pas dans la bdd
+	//						creation du profil
+	//						creation de la protection des info du profil
+	//						envoie du message de bienvenue
+	//						Retourne Activation du profil
+	//					Sinon
+	//						Retourne email existe deja
+	//				Sinon
+	//					Retourne email non valide
+	//			Sinon
+	//				Retourne le pseudo existe
+	//		Sinon
+	//			Retourne les 2 mots de passe sont !=
+	// Sinon
+	// 		Retourne remplir tout les champs
+	public static function insertClient($email, $passeUn, $passeDe) {
+		if(!empty($email) AND !empty($passeUn) AND !empty($passeDe)) {
+			if($passeUn === $passeDe) {
+				$verifMail = Bdd::connectBdd()->prepare(SELECT.ALL.MEMBRE.EMAIL);
+				$verifMail -> bindParam(':email', $email, PDO::PARAM_STR, 50);
+				$verifMail -> execute();
+				if($verifMail -> rowCount() != 1) {
+					if(filter_var($email, FILTER_VALIDATE_EMAIL)) {
+						$verifMail = Bdd::connectBdd()->prepare(SELECT.ALL.MEMBRE.EMAIL);
+						$verifMail -> bindParam(':email', $email);
+						$verifMail -> execute();
+						if($verifMail -> rowCount() != 1) {
+							InscriptionClient::profil($_POST['nom'], $_POST['prenom'], $email, $_POST['password']);
+							$resultat = InscriptionClient::activer($email);
+						}
+						else {
+							$resultat = 'L\'adresse email '.$email.' existe d&eacute;j&agrave;,<br />veuillez saisir une autre adresse et recommencer l\'inscription..';
+						}
+					}
+					else {
+						$resultat = 'L\'adresse email saisie n\'est pas valide, <br />veuillez recommencer l\'inscription.';
+					}
+				}
+				else {
+					$resultat = 'L\'email saisi existe déjà';
+				}
+			}
+			else {
+				$resultat = 'Les deux mots de passe doivent être identiques';
+			}
+		}
+		else {
+			$resultat = 'Vous devez remplir tout les champs.';
+		}
+		return $resultat;
+	}
+
+	//creation espace gerant
+
+
+	// creation du profil
+	public static function profil($nom, $prenom, $email, $password) {
+		$password = Cryptage::crypter($password);
+		$niveau = 2;
+		$resultat = Bdd::connectBdd()->prepare(INSERT.MEMBREZ.PROFILC);
+		$resultat -> bindParam(':nom', $nom);
+		$resultat -> bindParam(':prenom', $prenom);
+		$resultat -> bindParam(':email', $email);
+		$resultat -> bindParam(':password', $password);
+ 		$resultat -> bindParam(':niveau', $niveau);
+		$resultat -> execute();
+		$currenConn=Bdd::getCurrentConnexion();
+		return $currenConn->lastInsertId();
 	}
 
 
@@ -205,7 +316,7 @@ class Membre {
 		$resultat -> bindParam(':email', $email, PDO::PARAM_STR, 50);
 		$resultat -> execute();
 		$donnee = $resultat -> fetch(PDO::FETCH_ASSOC);
-		return $donnee['id_membre_pro'];
+		return $donnee['id_membre'];
 	}
 
 	// Fonction de recuperation des infos membre
@@ -307,25 +418,25 @@ class Activation {
 		}
 	}
 	public static function activ($id){
-		$reqs = Bdd::connectBdd()->prepare('UPDATE membre_pro SET activation=1 WHERE id_membre_pro=:id_membre_pro');
-		$reqs -> bindParam(':id_membre_pro', $id, PDO::PARAM_INT, 25);
+		$reqs = Bdd::connectBdd()->prepare('UPDATE membre_pro SET activation=1 WHERE id_membre=:id_membre');
+		$reqs -> bindParam(':id_membre', $id, PDO::PARAM_INT, 25);
 		$reqs -> execute();
 	}
 	public static function deleteActiv($id){
-		$reqs = Bdd::connectBdd()->prepare('DELETE FROM activationmail WHERE id_membre_pro=:id_membre_pro');
-		$reqs -> bindParam(':id_membre_pro', $id, PDO::PARAM_INT, 25);
+		$reqs = Bdd::connectBdd()->prepare('DELETE FROM activationmail WHERE id_membre=:id_membre');
+		$reqs -> bindParam(':id_membre', $id, PDO::PARAM_INT, 25);
 		$reqs -> execute();
 	}
 
 		public static function majActiv($securite){
 
-			$resultat = Bdd::connectBdd()->prepare('SELECT  id, id_membre_pro, jeton FROM activationmail WHERE jeton=:jeton');
+			$resultat = Bdd::connectBdd()->prepare('SELECT  id, id_membre, jeton FROM activationmail WHERE jeton=:jeton');
 			$resultat -> bindParam(':jeton', $securite, PDO::PARAM_STR, 25);
 			$resultat -> execute();
 			while($Activ = $resultat -> fetch(PDO::FETCH_ASSOC)){
 				if($securite == $Activ['jeton']) {
-					Activation::activ($Activ['id_membre_pro']);
-					Activation::deleteActiv($Activ['id_membre_pro']);
+					Activation::activ($Activ['id_membre']);
+					Activation::deleteActiv($Activ['id_membre']);
 					return 1;
 				}
 				else{
@@ -749,7 +860,7 @@ class ProtectEspace {
 		$resultat -> execute();
 		while($jeton = $resultat -> fetch(PDO::FETCH_ASSOC)) {
 			$liste .= '<tr>
-					<td align="center">Le '.$jeton['date'].'</td>
+					<td align="center">Le '.date('Y-m-d H:i:s', $jeton['date']).'</td>
 					<td align="center">'.$jeton['ip_connexion'].'</td>
 					<td align="center">
 					<form method="post" action="">

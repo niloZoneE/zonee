@@ -1,9 +1,11 @@
 <?php session_start();
 
 include('function.php');
-
 echo InscriptionPro::insertPro($_POST['email'], $_POST['password'], $_POST['conf_password']);
-redirection('index.php', $time=3);
+if (InscriptionPro::insertPro($_POST['email'], $_POST['password'], $_POST['conf_password'])){
+	InscriptionPro::insertForm(Membre::recupId($_POST['email']), $_POST['societe'], $_POST['localcommercial']);
+	redirection('index.php', $time=4);
+}
 ?>
 			<center>
 			<br />
